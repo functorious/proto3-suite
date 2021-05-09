@@ -85,7 +85,7 @@ fieldNumber = FieldNumber . fromInteger <$> integer
 -- identifiers
 
 identifierName :: ProtoParser String
-identifierName = do h <- letter
+identifierName = do h <- (letter <|> char '_')
                     t <- many (alphaNum <|> char '_')
                     return $ h:t
 
