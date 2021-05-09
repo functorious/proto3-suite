@@ -576,6 +576,21 @@ instance MessageField (PackedVec Int64) where
   decodeMessageField = decodePacked Decode.packedVarints
   protoType _ = messageField (Repeated Int64) (Just DotProto.PackedField)
 
+instance MessageField (PackedVec (Signed Int32)) where
+  encodeMessageField fn = omittingDefault (Encode.packedVarintsV fromIntegral fn) . coerce @_ @(Vector Int32)
+  decodeMessageField = coerce @(Parser RawField (PackedVec Int32))
+                              @(Parser RawField (PackedVec (Signed Int32)))
+                             (decodePacked Decode.packedVarints)
+  protoType _ = messageField (Repeated SInt32) (Just DotProto.PackedField)
+
+instance MessageField (PackedVec (Signed Int64)) where
+  encodeMessageField fn = omittingDefault (Encode.packedVarintsV fromIntegral fn) . coerce @_ @(Vector Int64)
+  decodeMessageField = coerce @(Parser RawField (PackedVec Int64))
+                              @(Parser RawField (PackedVec (Signed Int64)))
+                             (decodePacked Decode.packedVarints)
+  protoType _ = messageField (Repeated SInt64) (Just DotProto.PackedField)
+
+
 instance MessageField (PackedVec (Fixed Word32)) where
   encodeMessageField fn = omittingDefault (Encode.packedFixed32V id fn) . coerce @_ @(Vector Word32)
   decodeMessageField = coerce @(Parser RawField (PackedVec Word32))
