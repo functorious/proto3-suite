@@ -91,6 +91,7 @@ module Proto3.Suite.Class
   , GenericMessage(..)
   ) where
 
+import           Data.Bits                     ( (.|.), shiftL, shiftR, xor )
 import           Control.Applicative
 import           Control.Monad
 import qualified Data.ByteString        as B
@@ -577,14 +578,14 @@ instance MessageField (PackedVec Int64) where
   protoType _ = messageField (Repeated Int64) (Just DotProto.PackedField)
 
 instance MessageField (PackedVec (Signed Int32)) where
-  encodeMessageField fn = omittingDefault (Encode.packedVarintsV fromIntegral fn) . coerce @_ @(Vector Int32)
+  encodeMessageField fn = omittingDefault (Encode.packedVarintsV (\i -> (fromIntegral ((i `shiftL` 1) `xor` (i `shiftR` 31)))) fn) . coerce @_ @(Vector Int32)
   decodeMessageField = coerce @(Parser RawField (PackedVec Int32))
                               @(Parser RawField (PackedVec (Signed Int32)))
                              (decodePacked Decode.packedVarints)
   protoType _ = messageField (Repeated SInt32) (Just DotProto.PackedField)
 
 instance MessageField (PackedVec (Signed Int64)) where
-  encodeMessageField fn = omittingDefault (Encode.packedVarintsV fromIntegral fn) . coerce @_ @(Vector Int64)
+  encodeMessageField fn = omittingDefault (Encode.packedVarintsV (\i -> (fromIntegral ((i `shiftL` 1) `xor` (i `shiftR` 63)))) fn) . coerce @_ @(Vector Int64)
   decodeMessageField = coerce @(Parser RawField (PackedVec Int64))
                               @(Parser RawField (PackedVec (Signed Int64)))
                              (decodePacked Decode.packedVarints)
